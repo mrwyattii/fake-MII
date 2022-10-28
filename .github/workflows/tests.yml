@@ -20,9 +20,28 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Setup devpi repo
+        run: |
+          pip install devpi devpi-server
+          devpi-init
+          devpi-server &
+          sleep 10
+          devpi use http://localhost:3141
+          devpi user -c testuser password=123
+          devpi login testuser --password=123
+          devpi index -c dev bases=root/pypi
+          devpi use testuser/dev
+
+      - name: Add DS to devpi repo
+        run: |
+          git clone https://github.com/mrwyattii/fake-DS.git
+          cd ./fake-DS
+          devpi upload
+          cd ..
+
       - name: Install mii
         run: |
-          pip install .
+          devpi install .
 
       - name: Run tests
         run: |
